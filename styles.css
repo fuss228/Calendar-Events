@@ -128,6 +128,74 @@
   padding: 1px 5px;
   color: var(--text-muted);
 }
+.cev-note-badge {
+  font-size: 9px;
+  align-self: flex-end;
+  background: var(--background-secondary-alt);
+  border-radius: 8px;
+  padding: 1px 5px;
+  color: var(--text-normal);
+  cursor: pointer;
+  user-select: none;
+}
+.cev-note-badge:hover {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Notes section (right column) */
+.cev-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.cev-note-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto;
+  gap: 6px;
+  align-items: center;
+  padding: 4px 6px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+}
+.cev-note-icon {
+  font-size: 14px;
+  text-align: center;
+}
+.cev-note-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+.cev-note-label:hover {
+  text-decoration: underline;
+}
+.cev-note-open {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0 4px;
+}
+.cev-note-open:hover {
+  color: var(--text-accent);
+}
+.cev-note-search-input {
+  width: 100%;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--text-normal);
+}
+
 
 .cev-legend {
   display: flex;
@@ -158,13 +226,15 @@
   display: inline-block;
 }
 
-/* Modal */
+/* Modal — Obsidian's modal centers its content; we widen it for the day editor. */
+.modal .cev-modal-root {
+  width: min(1400px, 96vw);
+  margin: 0 auto;
+}
 .cev-modal-root {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 760px;
-  max-width: 92vw;
+  gap: 14px;
   box-sizing: border-box;
 }
 
@@ -175,8 +245,9 @@
 
 .cev-modal-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
 }
 
 .cev-col {
@@ -184,8 +255,9 @@
   flex-direction: column;
   gap: 8px;
   background: var(--background-secondary);
-  padding: 10px;
+  padding: 12px;
   border-radius: 6px;
+  min-width: 0;
 }
 
 .cev-col h3 {
@@ -197,63 +269,60 @@
 .cev-checklist {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
 }
 
-.cev-empty {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-style: italic;
-}
+/* Event row layout.
+   Top row:   [swatch] [category] [title flex] [time] [remove]
+   Next row:  [swatch] [-------------------- note --------------------] (note spans across)
 
+   Each cell is given min-width: 0 so flex/1fr columns can actually shrink. */
 .cev-event-row {
   display: grid;
   grid-template-columns:
-    14px          /* swatch */
-    minmax(96px, auto)   /* category select */
-    minmax(160px, 1fr)   /* title */
-    110px         /* time */
-    28px;         /* remove */
-  grid-template-areas:
-    "swatch cat title  time  remove"
-    "swatch cat note   note  note";
-  column-gap: 6px;
-  row-gap: 4px;
+    16px                          /* swatch */
+    150px                         /* category select */
+    minmax(160px, 1fr)            /* title — must have a minimum so it stays readable */
+    150px                         /* time */
+    32px;                         /* remove button */
+  column-gap: 10px;
+  row-gap: 6px;
   align-items: center;
   border-left: 3px solid var(--text-muted);
-  padding: 6px 6px 6px 8px;
+  padding: 6px 6px 6px 10px;
 }
-.cev-event-swatch { grid-area: swatch; }
-.cev-event-category { grid-area: cat; min-width: 0; }
-.cev-event-title { grid-area: title; min-width: 0; }
-.cev-event-time { grid-area: time; min-width: 0; }
-.cev-event-note { grid-area: note; min-width: 0; width: 100%; }
-.cev-event-remove { grid-area: remove; }
-
+.cev-event-row > .cev-event-swatch  { grid-column: 1; }
+.cev-event-row > .cev-event-category { grid-column: 2; }
+.cev-event-row > .cev-event-title    { grid-column: 3; min-width: 0; }
+.cev-event-row > .cev-event-time     { grid-column: 4; min-width: 0; }
+.cev-event-row > .cev-event-remove   { grid-column: 5; }
+.cev-event-note-wrap {
+  grid-column: 2 / span 3;          /* under cat..time on its own row */
+  min-width: 0;
+}
 .cev-event-swatch {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: var(--text-muted);
 }
-
 .cev-event-title,
 .cev-event-time,
 .cev-event-note,
 .cev-cat-label {
+  min-width: 0;
   width: 100%;
+  font-size: 13px;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: 4px;
   padding: 3px 6px;
   color: var(--text-normal);
 }
-
 .cev-event-time {
   font-variant-numeric: tabular-nums;
 }
-
 .cev-event-remove {
   background: transparent;
   border: none;
@@ -261,13 +330,14 @@
   cursor: pointer;
   font-size: 14px;
 }
-
 .cev-event-remove:hover {
   color: var(--text-error);
 }
 
+/* Checklist row: checkbox, growing text input, remove button */
 .cev-check-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 24px;
   align-items: center;
   gap: 6px;
 }
@@ -370,11 +440,17 @@
   .cev-modal-root { width: 96vw; }
   .cev-modal-grid { grid-template-columns: 1fr; }
   .cev-event-row {
-    grid-template-columns: 14px 1fr 28px;
+    grid-template-columns: 14px minmax(0, 1fr) 28px;
     grid-template-areas:
       "swatch title remove"
       "swatch time   time"
       "swatch note   note"
       "cat    cat    cat";
   }
+  .cev-event-row .cev-event-category { grid-area: cat; }
+  .cev-event-row .cev-event-swatch { grid-area: swatch; }
+  .cev-event-row .cev-event-title { grid-area: title; }
+  .cev-event-row .cev-event-time { grid-area: time; }
+  .cev-event-row .cev-event-note { grid-area: note; grid-column: auto; }
+  .cev-event-row .cev-event-remove { grid-area: remove; }
 }

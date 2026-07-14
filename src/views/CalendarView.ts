@@ -139,6 +139,17 @@ export class CalendarView extends ItemView {
           badge.title = `${remaining} open / ${data.checklist.length} total`;
         }
 
+        if (data.notes && data.notes.length > 0) {
+          const link = dayEl.createDiv({ cls: "cev-note-badge" });
+          link.setText(`🔗${data.notes.length}`);
+          link.title = `${data.notes.length} linked note(s)`;
+          // Clicking the badge directly opens the first linked note.
+          link.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            this.plugin.storage.openNoteRef(data.notes[0]);
+          });
+        }
+
         dayEl.addEventListener("click", () => {
           new DayEditorModal(this.plugin.app, this.plugin, cell.key).open();
         });

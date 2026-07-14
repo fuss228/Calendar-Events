@@ -55,7 +55,18 @@ export interface Strings {
   settingsImported: string;
   settingsImportFailed: (e: string) => string;
   settingsRemoveConfirm: string;
+  notesHeading: string;
+  notesSearchLabel: string;
+  notesSearchDesc: string;
+  notesSearchPlaceholder: string;
+  notesAddByUrl: string;
+  notesUrlPrompt: string;
+  invalidUrl: string;
+  openNote: string;
+  openExternal: string;
+  noNotes: string;
 }
+
 
 const en: Strings = {
   viewTitle: "Calendar Events",
@@ -110,6 +121,16 @@ const en: Strings = {
   settingsImported: "Calendar data replaced.",
   settingsImportFailed: (e) => `Import failed: ${e}`,
   settingsRemoveConfirm: "Remove this category? Existing events keep the id.",
+  notesHeading: "Linked notes",
+  notesSearchLabel: "Link a note",
+  notesSearchDesc: "Pick a vault file to associate with this day.",
+  notesSearchPlaceholder: "Search vault notes…",
+  notesAddByUrl: "Add URL…",
+  notesUrlPrompt: "External link URL:",
+  invalidUrl: "Please enter a valid http(s) URL.",
+  openNote: "Open note",
+  openExternal: "Open link in browser",
+  noNotes: "No linked notes yet.",
 };
 
 const zh: Strings = {
@@ -165,6 +186,16 @@ const zh: Strings = {
   settingsImported: "日历数据已替换。",
   settingsImportFailed: (e) => `导入失败：${e}`,
   settingsRemoveConfirm: "确认删除该类别？已有事件会保留该 id。",
+  notesHeading: "关联笔记",
+  notesSearchLabel: "关联笔记",
+  notesSearchDesc: "选择一个 vault 内的笔记，把它与这一天关联起来。",
+  notesSearchPlaceholder: "搜索 vault 笔记…",
+  notesAddByUrl: "添加外链…",
+  notesUrlPrompt: "外部链接地址：",
+  invalidUrl: "请输入合法的 http(s) 链接。",
+  openNote: "打开笔记",
+  openExternal: "在浏览器中打开",
+  noNotes: "暂无关联笔记。",
 };
 
 export const STRINGS: Record<"en" | "zh", Strings> = { en, zh };

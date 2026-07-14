@@ -1,16 +1,32 @@
-import { App, Modal, Notice, Setting } from "obsidian";
+import {
+  App,
+  Modal,
+  Notice,
+  Setting,
+  AbstractInputSuggest,
+  TFile,
+} from "obsidian";
 import CalendarEventsPlugin from "../main";
-import { CalendarEvent, ChecklistItem, Category, DayData } from "../types/model";
+import {
+  CalendarEvent,
+  ChecklistItem,
+  Category,
+  DayData,
+  NoteRef,
+} from "../types/model";
 import { makeId } from "../storage";
 
 export class DayEditorModal extends Modal {
-  private plugin: CalendarEventsPlugin;
   private dateKey: string;
   private data: DayData;
   private eventsContainer!: HTMLElement;
   private checklistContainer!: HTMLElement;
   private summaryEl!: HTMLElement;
+  private notesContainer!: HTMLElement;
   private t!: import("../i18n/strings").Strings;
+
+  // public for inner class access
+  readonly plugin: CalendarEventsPlugin;
 
   constructor(app: App, plugin: CalendarEventsPlugin, dateKey: string) {
     super(app);
@@ -55,6 +71,56 @@ export class DayEditorModal extends Modal {
     const checkCol = grid.createDiv({ cls: "cev-col cev-col-checklist" });
     checkCol.createEl("h3", { text: this.t.checklistHeading });
     this.checklistContainer = checkCol.createDiv({ cls: "cev-checklist" });
+
+    // --- Notes (associated notes) ---
+    checkCol.createEl("h3", { text: this.t.notesHeading });
+    this.notesContainer = checkCol.createDiv({ cls: "cev-notes" });
+    // Search field (link to existing vault note) + URL field (external).
+    const noteSearch = new NoteSuggest(this.app, this, (note) => {
+      const exists = this.data.notes.some(
+        (n) => n.path === note.path
+      );
+      if (!exists) {
+        this.data.notes.push({
+          id: makeId("note"),
+          title: note.title,
+          path: note.path,
+          url: null,
+        });
+        this.renderNotes();
+        this.renderSummary();
+      }
+    });
+    const noteUrlText = "";
+    const addUrl = (txt: string) => {
+      const t = txt.trim();
+      if (!t) return;
+      let parsed: URL | null = null;
+      try { parsed = new URL(t); } catch (_) { parsed = null; }
+      if (!parsed || !/^https?:/.test(parsed.protocol)) {
+        new Notice(this.t.invalidUrl);
+        return;
+      }
+      this.data.notes.push({
+        id: makeId("note"),
+        title: parsed.hostname + parsed.pathname,
+        path: null,
+        url: parsed.toString(),
+      });
+      this.renderNotes();
+      this.renderSummary();
+    };
+    new Setting(checkCol)
+      .setName(this.t.notesSearchLabel)
+      .setDesc(this.t.notesSearchDesc)
+      .addButton((btn) =>
+        btn
+          .setButtonText(this.t.notesAddByUrl)
+          .onClick(() => {
+            const input = prompt(this.t.notesUrlPrompt, "https://");
+            if (input != null) addUrl(input);
+          })
+      );
     let newCheckText = "";
     new Setting(checkCol)
       .setName(this.t.addChecklistLabel)
@@ -79,6 +145,7 @@ export class DayEditorModal extends Modal {
 
     this.renderEvents();
     this.renderChecklist();
+    this.renderNotes();
 
     const buttons = root.createDiv({ cls: "cev-modal-buttons" });
     buttons.createEl("button", { text: this.t.clearDay, cls: "cev-btn-warn" }, (el) => {
@@ -236,12 +303,59 @@ export class DayEditorModal extends Modal {
       });
     });
   }
+
+  /** Public accessor used by the inline NoteSuggest helper class. */
+  public strings(): import("../i18n/strings").Strings {
+    return this.t;
+  }
+
+  private renderNotes() {
+    this.notesContainer.empty();
+    if (this.data.notes.length === 0) {
+      this.notesContainer.createDiv({
+        cls: "cev-empty",
+        text: this.t.noNotes,
+      });
+      return;
+    }
+    this.data.notes.forEach((n, idx) => {
+      const row = this.notesContainer.createDiv({ cls: "cev-note-row" });
+      const icon = row.createSpan({ cls: "cev-note-icon" });
+      icon.setText(n.path ? "📄" : "🔗");
+      const label = row.createEl("a", {
+        cls: "cev-note-label internal-link",
+        text: n.title,
+        href: "#",
+      });
+      label.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        try {
+          this.plugin.storage.openNoteRef({ path: n.path, url: n.url, title: n.title });
+        } catch (e) {
+          new Notice(`Failed to open: ${(e as Error).message}`);
+        }
+      });
+      const openBtn = row.createEl("button", { cls: "cev-note-open", text: "↗" });
+      openBtn.title = n.path ? this.t.openNote : this.t.openExternal;
+      openBtn.addEventListener("click", () => {
+        this.plugin.storage.openNoteRef({ path: n.path, url: n.url, title: n.title });
+      });
+      const removeBtn = row.createEl("button", { text: "✕", cls: "cev-event-remove" });
+      removeBtn.title = this.t.remove;
+      removeBtn.addEventListener("click", () => {
+        this.data.notes.splice(idx, 1);
+        this.renderNotes();
+        this.renderSummary();
+      });
+    });
+  }
 }
 
 function clone(d: DayData): DayData {
   return {
     events: d.events.map((e) => ({ ...e })),
     checklist: d.checklist.map((c) => ({ ...c })),
+    notes: (d.notes ?? []).map((n) => ({ ...n })),
   };
 }
 
@@ -254,5 +368,42 @@ function formatPretty(key: string, loc: "en" | "zh"): string {
   const [y, m, d] = key.split("-").map((s) => parseInt(s, 10));
   if (!y || !m || !d) return key;
   const date = new Date(y, m - 1, d);
-  return date.toLocaleDateString(loc === "zh" ? "zh-CN" : "en-US", { weekday: "short", year: "numeric", month: "long", day: "numeric" });
+  return date.toLocaleDateString(
+    loc === "zh" ? "zh-CN" : "en-US",
+    { weekday: "short", year: "numeric", month: "long", day: "numeric" }
+  );
+}
+
+/**
+ * Inline suggest widget for picking a vault note by name.
+ * Uses Obsidian's AbstractInputSuggest API (public: getSuggestions / renderSuggestion / onSelect).
+ */
+class NoteSuggest extends AbstractInputSuggest<{ path: string; title: string }> {
+  constructor(
+    app: App,
+    private modal: DayEditorModal,
+    private onChoose: (note: { path: string; title: string }) => void
+  ) {
+    const inputEl = modal.contentEl.createEl("input", {
+      type: "text",
+      placeholder: modal.strings().notesSearchPlaceholder,
+      cls: "cev-note-search-input",
+    }) as unknown as HTMLInputElement;
+    super(app, inputEl);
+    this.onSelect((value) => {
+      this.onChoose(value);
+      inputEl.value = "";
+    });
+  }
+
+  getSuggestions(query: string): { path: string; title: string }[] {
+    return (this.modal.plugin.storage as any).searchNotes(query, 12);
+  }
+
+  renderSuggestion(item: { path: string; title: string }, el: HTMLElement) {
+    el.createDiv({ cls: "cev-note-suggest-title", text: item.title });
+    if (item.path !== item.title) {
+      el.createDiv({ cls: "cev-note-suggest-path", text: item.path });
+    }
+  }
 }

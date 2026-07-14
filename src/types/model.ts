@@ -12,9 +12,20 @@ export interface ChecklistItem {
   done: boolean;
 }
 
+export interface NoteRef {
+  id: string;
+  /** Display title for the note (also used to render the link label). */
+  title: string;
+  /** Path to the note inside the vault, or null for external URLs. */
+  path: string | null;
+  /** External URL, or null for vault notes. */
+  url: string | null;
+}
+
 export interface DayData {
   events: CalendarEvent[];
   checklist: ChecklistItem[];
+  notes: NoteRef[];
 }
 
 export interface Category {
@@ -32,7 +43,7 @@ export interface CalendarStore {
 export const DATA_FILE = "calendar-data.json";
 
 export function emptyDay(): DayData {
-  return { events: [], checklist: [] };
+  return { events: [], checklist: [], notes: [] };
 }
 
 export const DEFAULT_CATEGORIES: Category[] = [
