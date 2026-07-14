@@ -1,30 +1,32 @@
-# Calendar Events v0.3.1
+# Calendar Events v0.3.2
 
-Sidebar calendar with per-day **events**, **checklists**, and **linked notes**. Bilingual UI. Finalizes the wider modal layout and the new per-event row layout.
+Sidebar calendar with per-day **events**, **checklists**, and **linked notes**. Bilingual UI (English + 中文).
 
-## ✨ What's new in 0.3.1
+![Sidebar](./docs/sidebar-view.png)
+![Day editor](./docs/day-editor-modal.png)
 
-- **Wider modal**: hard cap raised to `min(1800px, 96vw)`. The day editor now spans almost the full window on wide displays.
-- **Per-event row layout**: 6-column grid where `Note` (备注) shares a row with the `Remove` button.
+## ✨ What's new in 0.3.2
 
-  ```
-  swatch  category  [ title (1fr) ]     time (160)  ╱ ✕
-  swatch  category  [── note (1fr) ──────────────────] ✕
-  ```
+- **Linked notes section** — UI cleanup:
+  - The vault-note search input (`AbstractInputSuggest`) now lives **inside** the "Linked notes" section; previously it was being appended directly to the modal body and showing up in the bottom-left of the modal.
+  - The "Add URL" row is now an inline `https://...` text field + **Add** button (it used to open a `prompt()` dialog).
+- "Linked notes" search label upgraded to `Pick a note` / `选择 vault 笔记`.
+- README rewritten with up-to-date screenshots.
 
-  - Category select: **170 px**
-  - Title: min **200 px** then flex
-  - Time: **160 px**
-  - Note: flex across columns 3–5 on the second row
-  - ✕: stays in column 6, anchored to the right
-- **Sticky modal header**: title and close button stay fixed in place while the body scrolls. Horizontal scrolling is suppressed inside the modal so the header never appears to slide sideways.
+## What 0.3.1 brought
 
-## 🔧 Install
+- **Modal widened** — `min(1800px, 96vw)` cap; on large displays the day editor spans almost the full window.
+- **Per-event row layout** — 6-column CSS grid: `swatch · category · title · time ·  · ✕` on row 1 and `swatch · category · note (flex) · ✕` on row 2 (note shares its row with the delete button).
+- **Sticky modal header** — title and ✕ close button never scroll.
+
+## What 0.3.0 brought
+
+- **Linked notes per day** — search any vault note via `AbstractInputSuggest` or paste an http(s) URL.
+- **Calendar cell 🔗N badge** for days with linked notes.
+- Two-column layout: Events on the left, Checklist + Linked notes + Add task on the right.
+
+## 📦 Install
 
 1. Download `calendar-events.zip` below.
 2. Unzip into `<vault>/.obsidian/plugins/calendar-events/`.
 3. **Settings → Community plugins → enable Calendar Events**.
-
-## 🗒️ Full changelog
-
-[CHANGELOG.md](./CHANGELOG.md)

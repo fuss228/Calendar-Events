@@ -1,67 +1,76 @@
 # Calendar Events (Obsidian plugin)
 
-A sidebar calendar for Obsidian where every day can hold color-coded events and a checklist. Built to feel like a lightweight Google Calendar panel: open the side panel, glance at the month, click a day to edit.
+A sidebar calendar for Obsidian where every day holds color-coded events, a checklist, and **linked notes**. Bilingual UI (English + 中文).
 
-![quick-look](./docs/screenshot.png)
+![Sidebar view](./docs/sidebar-view.png)
+![Day editor modal](./docs/day-editor-modal.png)
 
 ## Features
 
-- **Sidebar calendar**: persistent month grid in the right pane of Obsidian.
-- **Per-day editing**: click any day to open a modal with two columns — Events and Checklist.
-- **Color-coded categories**: events show up as colored dots on the calendar and a colored bar in the modal (Email, Meeting, Task, Reminder, Personal by default; add/rename/recolor freely in Settings).
-- **Checklist per day**: independent of events, with completed-counter badges.
-- **JSON data store**: stored at `calendar-data.json` in your vault root. Back up by copying the file; restore by pasting JSON in Settings → Import.
-- **Commands**: open the sidebar, edit today's events, jump to today.
+- **Sidebar monthly calendar** — opens in the right pane of Obsidian (`Open Calendar` ribbon icon or the `Calendar Events: Open Calendar sidebar` command).
+- **Click any day** — opens a wide day editor with three sections: **Events**, **Checklist**, **Linked notes**.
+- **Color-coded events** — five built-in categories (Email / Meeting / Task / Reminder / Personal). Add, rename, recolor, or delete categories from the settings tab.
+- **Per-event row layout (v0.3.1)** — category select · title · time · delete button all fit on a single line; the **note** input shares its row with the ✕ **delete** button.
+- **Checklist per day** — checkbox + free-text, with a `done/total` counter badge on the calendar cell.
+- **Linked notes per day (v0.3.0)** — search any vault note via Obsidian's `AbstractInputSuggest`, or paste an external `https://` URL.
+- **Calendar cell badges** — days with events show colored dots; days with checklists show `done/total`; days with linked notes show `🔗N`.
+- **Bilingual UI** — choose **Auto** / **English** / **中文** in Settings → Calendar Events → Language. Date titles use `Locale` correctly.
+- **Settings tab** — language, week start, category management, JSON export/import.
+- **Single-file JSON store** at `<vault>/calendar-data.json`. Easy to back up, easy to diff.
 
 ## Installation
 
-1. Build (or grab a release):
-   ```bash
-   npm install
-   npm run build
-   ```
-   This produces `main.js` and `styles.css`.
-2. Copy the plugin folder (containing `main.js`, `manifest.json`, `styles.css`) into `<your-vault>/.obsidian/plugins/calendar-events/`.
-3. In Obsidian: Settings → Community plugins → enable **Calendar Events**.
+1. Download `calendar-events.zip` from the latest [release](https://github.com/fuss228/Calendar-Events/releases).
+2. Unzip into `<your-vault>/.obsidian/plugins/calendar-events/` (you should end up with `main.js`, `manifest.json`, `styles.css`, `versions.json`).
+3. In Obsidian: **Settings → Community plugins → enable Calendar Events**.
 
 ## Commands
 
-| Command                | What it does                                    |
-| ---------------------- | ----------------------------------------------- |
-| Open Calendar sidebar  | Reveals/creates the right-pane calendar view.   |
-| Edit today's events    | Opens the day editor for the current date.      |
-| Jump to today          | Opens the sidebar and focuses on the current month. |
+| Command | Description |
+| --- | --- |
+| Open Calendar sidebar | Reveals or creates the right-pane calendar view |
+| Edit today's events  | Opens the day editor for the current date |
+| Jump to today        | Opens the sidebar and focuses on the current month |
 
-## How data is stored
+## Data shape
 
-A single `calendar-data.json` file at the vault root:
+`calendar-data.json` in the vault root:
 
 ```json
 {
   "version": 1,
   "categories": [
-    { "id": "email", "label": "Email", "color": "#3a7bd5" }
+    { "id": "email",   "label": "Email",   "color": "#3a7bd5" },
+    { "id": "meeting", "label": "Meeting", "color": "#7e57c2" }
   ],
   "days": {
     "2026-07-14": {
       "events": [
-        { "id": "ev_xxx", "title": "Reply: renewal terms", "type": "email", "time": "10:00" }
+        { "id": "ev_xxx", "title": "Reply: renewal terms", "type": "email", "time": "09:30" }
       ],
       "checklist": [
-        { "id": "chk_xxx", "text": "Send proposal to Acme", "done": false }
+        { "id": "chk_xxx", "text": "Send proposal", "done": false }
+      ],
+      "notes": [
+        { "id": "note_a", "title": "Acme contract", "path": null,                  "url": "https://example.com/acme.pdf" },
+        { "id": "note_b", "title": "Workflow",      "path": "00_知识库/工作流程",  "url": null }
       ]
     }
   }
 }
 ```
 
-> Deleting the file resets the plugin to defaults; the plugin will recreate it on next load.
+`path` (vault note) and `url` (external) are mutually exclusive. Backwards compatible — loading a file without the `notes` field migrates it automatically.
 
-## Roadmap / ideas
+## Build from source
 
-- Per-event Markdown notes inside the editor.
-- Drag-to-move events between days.
-- Daily Note integration (write into a `YYYY-MM-DD.md` file instead of the JSON store).
-- Sync to/from Google Calendar.
+```bash
+npm install
+npm run build
+```
 
-Pull requests welcome.
+This produces `main.js` and `styles.css` in the project root. Drop them into your vault's plugin folder.
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
