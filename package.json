@@ -1,6 +1,6 @@
 {
   "name": "obsidian-calendar-events",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Sidebar calendar with per-day events and checklists for Obsidian.",
   "main": "main.js",
   "scripts": {

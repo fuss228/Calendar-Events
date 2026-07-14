@@ -1,7 +1,7 @@
 {
   "id": "calendar-events",
   "name": "Calendar Events",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "minAppVersion": "1.4.0",
   "description": "A sidebar calendar to edit per-day events, checklists, and linked notes. Color-coded categories, bilingual UI (EN/\u4e2d\u6587).",
   "author": "Codex",

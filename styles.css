@@ -226,16 +226,36 @@
   display: inline-block;
 }
 
-/* Modal — Obsidian's modal centers its content; we widen it for the day editor. */
-.modal .cev-modal-root {
-  width: min(1400px, 96vw);
-  margin: 0 auto;
+/* Modal overrides — widen the day editor so all controls fit at any reasonable
+   window size, and ensure the title (in .modal-header) stays fixed while only
+   the body scrolls. Cap the width at 96vw so we never push the modal past the
+   viewport. */
+.modal {
+  width: auto;
+  max-width: min(1800px, 96vw);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+.modal .modal-header {
+  flex: 0 0 auto;          /* never grows/shrinks; sticky inside the flex column */
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding: 16px 24px;
+}
+.modal .modal-content {
+  flex: 1 1 auto;          /* take remaining height and scroll */
+  overflow-y: auto;        /* vertical scroll */
+  overflow-x: hidden;      /* never horizontal scroll, so title doesn't appear to slide */
+  padding: 16px 24px 20px;
+  width: 100%;
 }
 .cev-modal-root {
   display: flex;
   flex-direction: column;
   gap: 14px;
   box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
 }
 
 .cev-summary {
@@ -245,9 +265,11 @@
 
 .cev-modal-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  gap: 20px;
+  grid-template-columns: minmax(420px, 1.7fr) minmax(320px, 1fr);
+  gap: 18px;
   align-items: start;
+  min-width: 0;
+  width: 100%;
 }
 
 .cev-col {
@@ -281,11 +303,12 @@
 .cev-event-row {
   display: grid;
   grid-template-columns:
-    16px                          /* swatch */
-    150px                         /* category select */
-    minmax(160px, 1fr)            /* title — must have a minimum so it stays readable */
-    150px                         /* time */
-    32px;                         /* remove button */
+    16px                          /* 1: swatch */
+    170px                         /* 2: category select */
+    minmax(200px, 1fr)            /* 3: title */
+    160px                         /* 4: time */
+    minmax(160px, 1fr)            /* 5: note — flexible, on second row */
+    32px;                         /* 6: remove button */
   column-gap: 10px;
   row-gap: 6px;
   align-items: center;
@@ -296,9 +319,9 @@
 .cev-event-row > .cev-event-category { grid-column: 2; }
 .cev-event-row > .cev-event-title    { grid-column: 3; min-width: 0; }
 .cev-event-row > .cev-event-time     { grid-column: 4; min-width: 0; }
-.cev-event-row > .cev-event-remove   { grid-column: 5; }
+.cev-event-row > .cev-event-remove   { grid-column: 6; }
 .cev-event-note-wrap {
-  grid-column: 2 / span 3;          /* under cat..time on its own row */
+  grid-column: 3 / span 3;          /* span over title..note columns; remove stays in col 6 */
   min-width: 0;
 }
 .cev-event-swatch {
